@@ -7,7 +7,7 @@ GET  /auth/me         - Get current user info
 """
 
 from fastapi import APIRouter, HTTPException, Depends
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel
 from datetime import datetime, timedelta
 from database import get_connection
 from auth import hash_password, verify_password, create_token, get_current_user
@@ -26,18 +26,17 @@ RESEND_COOLDOWN_S  = 60   # seconds before allowing resend
 # ── Models ─────────────────────────────────────────────────────────────────────
 class SendOtpRequest(BaseModel):
     username: str
-    email:    EmailStr
+    email:    str
     password: str           # stored temporarily to validate before sending OTP
 
 class VerifyOtpRequest(BaseModel):
-    email:    EmailStr
+    email:    str
     otp:      str
 
 class RegisterRequest(BaseModel):
     username: str
-    email:    EmailStr
+    email:    str
     password: str
-    otp:      str           # must include OTP now
 
 class LoginRequest(BaseModel):
     email:    str
@@ -69,13 +68,17 @@ async def send_otp(req: SendOtpRequest):
         raise HTTPException(400, "Username must be at least 2 characters.")
     if len(req.password) < 6:
         raise HTTPException(400, "Password must be at least 6 characters.")
+    
+    email = req.email.strip().lower()
+    if not email or '@' not in email or '.' not in email.split('@')[1]:
+        raise HTTPException(400, "Please enter a valid email address.")
 
     conn = get_connection()
     try:
         with conn.cursor() as cur:
             # Check if email/username already registered
             cur.execute("SELECT id FROM users WHERE email=%s OR username=%s",
-                        (req.email.lower(), req.username.strip()))
+                        (email, req.username.strip()))
             if cur.fetchone():
                 raise HTTPException(400, "Email or username already taken.")
 
@@ -84,14 +87,14 @@ async def send_otp(req: SendOtpRequest):
                 SELECT TIMESTAMPDIFF(SECOND, created_at, UTC_TIMESTAMP()) as elapsed_s
                 FROM email_verifications
                 WHERE email = %s ORDER BY created_at DESC LIMIT 1
-            """, (req.email.lower(),))
+            """, (email,))
             last = cur.fetchone()
             if last and last["elapsed_s"] is not None and last["elapsed_s"] < RESEND_COOLDOWN_S:
                 wait = int(RESEND_COOLDOWN_S - last["elapsed_s"])
                 raise HTTPException(429, f"Please wait {wait}s before requesting a new code.")
 
             # Delete any old OTP records for this email
-            cur.execute("DELETE FROM email_verifications WHERE email=%s", (req.email.lower(),))
+            cur.execute("DELETE FROM email_verifications WHERE email=%s", (email,))
 
             # Generate OTP, hash it for storage
             otp      = generate_otp()
@@ -101,13 +104,11 @@ async def send_otp(req: SendOtpRequest):
             cur.execute("""
                 INSERT INTO email_verifications (email, username, otp_hash, attempts, expires_at)
                 VALUES (%s, %s, %s, 0, %s)
-            """, (req.email.lower(), req.username.strip(), otp_hash, expires))
+            """, (email, req.username.strip(), otp_hash, expires))
             conn.commit()
 
-        # Send the email (outside DB transaction)
-        await send_verification_email(req.email, req.username.strip(), otp)
-
-        return {"message": "Verification code sent.", "expires_in": OTP_EXPIRE_MINUTES * 60}
+        # Skip email sending (test mode) - return OTP directly
+        return {"message": "Verification code sent.", "expires_in": OTP_EXPIRE_MINUTES * 60, "otp": otp}
 
     finally:
         conn.close()
@@ -116,44 +117,23 @@ async def send_otp(req: SendOtpRequest):
 @router.post("/register")
 def register(req: RegisterRequest):
     """
-    Step 2 of registration: verify OTP, then create the account.
+    Direct registration: create account with username, email, and password.
     """
     if len(req.username.strip()) < 2:
         raise HTTPException(400, "Username must be at least 2 characters.")
     if len(req.password) < 6:
         raise HTTPException(400, "Password must be at least 6 characters.")
-    if len(req.otp.strip()) != 6:
-        raise HTTPException(400, "Verification code must be 6 digits.")
+    
+    email = req.email.strip().lower()
+    if not email or '@' not in email or '.' not in email.split('@')[1]:
+        raise HTTPException(400, "Please enter a valid email address.")
 
     conn = get_connection()
     try:
         with conn.cursor() as cur:
-            # Fetch pending OTP
-            record = get_pending_otp(cur, req.email)
-            if not record:
-                raise HTTPException(400, "No active verification code. Please request a new one.")
-
-            # Check attempt limit
-            if record["attempts"] >= MAX_ATTEMPTS:
-                cur.execute("DELETE FROM email_verifications WHERE id=%s", (record["id"],))
-                conn.commit()
-                raise HTTPException(400, "Too many incorrect attempts. Please request a new code.")
-
-            # Increment attempt count
-            cur.execute("UPDATE email_verifications SET attempts = attempts + 1 WHERE id=%s", (record["id"],))
-            conn.commit()
-
-            # Verify OTP
-            if not otp_ctx.verify(req.otp.strip(), record["otp_hash"]):
-                remaining = MAX_ATTEMPTS - (record["attempts"] + 1)
-                raise HTTPException(400, f"Incorrect code. {remaining} attempt(s) remaining.")
-
-            # OTP valid — delete it so it can't be reused
-            cur.execute("DELETE FROM email_verifications WHERE id=%s", (record["id"],))
-
-            # Check again that email/username isn't taken (race condition guard)
+            # Check if email/username already registered
             cur.execute("SELECT id FROM users WHERE email=%s OR username=%s",
-                        (req.email.lower(), req.username.strip()))
+                        (email, req.username.strip()))
             if cur.fetchone():
                 raise HTTPException(400, "Email or username already taken.")
 
@@ -161,7 +141,7 @@ def register(req: RegisterRequest):
             hashed = hash_password(req.password)
             cur.execute(
                 "INSERT INTO users (username, email, password) VALUES (%s, %s, %s)",
-                (req.username.strip(), req.email.lower(), hashed)
+                (req.username.strip(), email, hashed)
             )
             conn.commit()
             user_id = cur.lastrowid
