@@ -16,7 +16,7 @@ app = FastAPI(title="Arc AI", version="2.0.0")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://localhost:3000"],
+    allow_origins=["http://localhost:5173", "https://arc-backend-zuv9.onrender.com"], #http://localhost:3000
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
