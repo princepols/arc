@@ -67,6 +67,33 @@ def init_db():
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
             """)
 
+            # Admin columns on users (safe to run multiple times)
+            for col_sql in [
+                "ALTER TABLE users ADD COLUMN IF NOT EXISTS is_banned   TINYINT(1)   NOT NULL DEFAULT 0",
+                "ALTER TABLE users ADD COLUMN IF NOT EXISTS banned_at   DATETIME     NULL",
+                "ALTER TABLE users ADD COLUMN IF NOT EXISTS ban_reason  VARCHAR(255) NULL",
+                "ALTER TABLE users ADD COLUMN IF NOT EXISTS last_active DATETIME     NULL",
+            ]:
+                try:
+                    cur.execute(col_sql)
+                except Exception:
+                    pass   # column already exists
+
+            # Activity logs
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS activity_logs (
+                    id          INT AUTO_INCREMENT PRIMARY KEY,
+                    user_id     INT          NULL,
+                    event_type  VARCHAR(50)  NOT NULL,
+                    description TEXT         NULL,
+                    ip_address  VARCHAR(45)  NULL,
+                    created_at  DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    INDEX idx_logs_user    (user_id),
+                    INDEX idx_logs_type    (event_type),
+                    INDEX idx_logs_created (created_at)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+            """)
+
         conn.commit()
         print("✅ Database tables initialized.")
     finally:

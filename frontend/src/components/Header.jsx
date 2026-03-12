@@ -1,5 +1,5 @@
 /**
- * Arc AI - Header (Revamped)
+ * Arc AI - Header (Mobile-Responsive)
  */
 import { PanelLeftClose, PanelLeftOpen } from 'lucide-react'
 
@@ -12,7 +12,7 @@ export default function Header({ sessionTitle, sidebarOpen, onToggleSidebar }) {
         </button>
         <span style={s.title}>{sessionTitle || 'Arc AI'}</span>
       </div>
-      <span style={s.badge}>POWERED BY GPT-OSS</span>
+      <span className="arc-badge" style={s.badge}>POWERED BY GPT-OSS</span>
     </header>
   )
 }
@@ -20,19 +20,25 @@ export default function Header({ sessionTitle, sidebarOpen, onToggleSidebar }) {
 const s = {
   header: {
     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-    padding: '0 20px', height: 52,
+    padding: '0 16px', height: 52,
     borderBottom: '1px solid var(--border-subtle)',
     background: 'var(--bg-base)', flexShrink: 0, zIndex: 10,
   },
-  left: { display: 'flex', alignItems: 'center', gap: 10 },
+  left: { display: 'flex', alignItems: 'center', gap: 10, minWidth: 0, flex: 1 },
   toggleBtn: {
     background: 'transparent', border: 'none', cursor: 'pointer',
-    color: 'var(--text-muted)', display: 'flex', padding: 4, borderRadius: 6,
+    color: 'var(--text-muted)', display: 'flex', padding: 6, borderRadius: 6,
+    flexShrink: 0,
   },
-  title: { fontSize: 14, fontWeight: 500, color: 'var(--text-primary)', maxWidth: 300, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
+  title: {
+    fontSize: 14, fontWeight: 500, color: 'var(--text-primary)',
+    overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+    minWidth: 0,
+  },
   badge: {
     fontSize: 10, fontWeight: 500, color: 'var(--text-muted)',
     background: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)',
-    padding: '2px 8px', borderRadius: 99, letterSpacing: '0.05em', textTransform: 'uppercase',
+    padding: '2px 8px', borderRadius: 99, letterSpacing: '0.05em',
+    textTransform: 'uppercase', flexShrink: 0, whiteSpace: 'nowrap',
   },
 }

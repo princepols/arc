@@ -19,15 +19,33 @@
   --font-mono:     'JetBrains Mono', monospace;
 }
 
-html, body, #root { height: 100%; width: 100%; overflow: hidden; }
-body { background: var(--bg-base); color: var(--text-primary); font-family: var(--font-sans); font-size: 14px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+html, body, #root { height: 100%; width: 100%; }
+body {
+  background: var(--bg-base);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior: none;
+  -webkit-text-size-adjust: 100%;
+}
+.arc-overflow-hidden { overflow: hidden; }
 
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border-mid); border-radius: 99px; }
 ::selection { background: var(--accent-dim); color: var(--accent); }
 
-/* Prose styles for AI messages */
+/* Hide scrollbar on mode row */
+.arc-mode-row::-webkit-scrollbar { display: none; }
+
+/* Hide badge on very small screens */
+@media (max-width: 400px) {
+  .arc-badge { display: none !important; }
+}
+
+/* Prose styles */
 .prose { line-height: 1.75; }
 .prose p { margin-bottom: 0.8em; }
 .prose p:last-child { margin-bottom: 0; }
@@ -44,3 +62,11 @@ body { background: var(--bg-base); color: var(--text-primary); font-family: var(
 .prose th, .prose td { border: 1px solid var(--border-mid); padding: 0.45em 0.8em; }
 .prose th { background: var(--bg-elevated); font-weight: 600; }
 .prose hr { border: none; border-top: 1px solid var(--border-subtle); margin: 1.1em 0; }
+
+/* Mobile */
+@media (max-width: 767px) {
+  textarea, input[type="text"], input[type="email"],
+  input[type="password"], input[type="numeric"] {
+    font-size: 16px !important; /* prevents iOS auto-zoom */
+  }
+}

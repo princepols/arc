@@ -1,12 +1,12 @@
 /**
- * Arc AI - MessageList v2
+ * Arc AI - MessageList v2 (Mobile-Responsive)
  */
 import { useEffect, useRef } from 'react'
 import Message from './Message'
 import TypingIndicator from './TypingIndicator'
 import WelcomeScreen from './WelcomeScreen'
 
-export default function MessageList({ messages, loading, fetching, username, onSuggestion }) {
+export default function MessageList({ messages, loading, fetching, username, onSuggestion, profile }) {
   const bottomRef = useRef(null)
 
   useEffect(() => {
@@ -24,8 +24,12 @@ export default function MessageList({ messages, loading, fetching, username, onS
       {messages.length === 0 && !loading
         ? <WelcomeScreen username={username} onSuggestion={onSuggestion} />
         : (
-          <div style={{ maxWidth: 720, width: '100%', margin: '0 auto', padding: '8px 24px', flex: 1 }}>
-            {messages.map(msg => <Message key={msg.id} message={msg} />)}
+          <div style={{
+            maxWidth: 720, width: '100%', margin: '0 auto',
+            padding: '8px 16px',
+            flex: 1,
+          }}>
+            {messages.map(msg => <Message key={msg.id} message={msg} profile={profile} />)}
             {loading && <TypingIndicator />}
             <div ref={bottomRef} style={{ height: 1 }} />
           </div>
