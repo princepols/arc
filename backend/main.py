@@ -16,7 +16,7 @@ app = FastAPI(title="Arc AI", version="2.0.0")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "https://arc-zeta-sooty.vercel.app"],
+    allow_origins=["http://localhost:5173", "https://arc-princepols.vercel.app", "https://arc-zeta-sooty.vercel.app"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
