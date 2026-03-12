@@ -2,7 +2,7 @@
  * Arc AI - API Client v2
  */
 
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api' /*const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api' */
+const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000' /*const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api' */
 
 async function request(path, options = {}) {
   const token = localStorage.getItem('arc_token')
