@@ -1,12 +1,14 @@
 {
   "root": "frontend",
-  "cleanUrls": true,
-  "rewrites": [
-    { "source": "/admin", "destination": "/index.html" },
-    { "source": "/admin/.*", "destination": "/index.html" },
-    { "source": "/(?!.*\\..*)", "destination": "/index.html" }
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/index.html",
+      "status": 200
+    }
   ]
 }
+
 
 
 
