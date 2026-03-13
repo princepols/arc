@@ -11,6 +11,7 @@ import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism'
 import { AlertCircle, Copy, Check, ThumbsUp, ThumbsDown, Volume2, VolumeX } from 'lucide-react'
 import arcLogo from '../assets/arclogo.png'
 import { Avatar } from './ProfileModal'
+import CodeBlock from './CodeBlock'
 
 const MODE_LABELS = {
   general: null,
@@ -213,10 +214,9 @@ function makeComponents() {
     code({ inline, className, children, ...props }) {
       const match = /language-(\w+)/.exec(className || '')
       return !inline && match ? (
-        <SyntaxHighlighter style={oneDark} language={match[1]} PreTag="div"
-          customStyle={{ background: '#0a0a0d', border: '1px solid var(--border-subtle)', borderRadius: 8, fontSize: '12.5px', margin: '0.75em 0' }} {...props}>
+        <CodeBlock language={match[1]}>
           {String(children).replace(/\n$/, '')}
-        </SyntaxHighlighter>
+        </CodeBlock>
       ) : (
         <code style={{ fontFamily: 'var(--font-mono)', fontSize: '0.85em', background: 'rgba(255,255,255,0.06)', border: '1px solid var(--border-subtle)', padding: '0.15em 0.45em', borderRadius: 4, color: 'var(--accent)' }} {...props}>
           {children}
