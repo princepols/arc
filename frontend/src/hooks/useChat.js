@@ -13,9 +13,16 @@ export function useChat(sessionId) {
 
   // Track whether current messages were populated by send() (skip DB reload)
   const populatedBySend = useRef(false)
+  const prevSessionIdRef = useRef(null)
 
   // Load messages when session changes — but skip if send() already populated them
   useEffect(() => {
+    // Always reset the flag when switching to a different session
+    if (sessionId !== prevSessionIdRef.current) {
+      populatedBySend.current = false
+      prevSessionIdRef.current = sessionId
+    }
+
     if (!sessionId) { setMessages([]); return }
 
     // If send() just created this session and already has messages, don't reload
