@@ -7,11 +7,18 @@ const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api'
 // Warm up backend on app load (prevent Render cold start)
 export const warmupBackend = async () => {
   try {
-    await fetch(`${BASE_URL.replace('/api', '')}/health`, { method: 'GET' })
-    // Hit a real endpoint to fully wake up
-    await fetch(`${BASE_URL}/auth/me`, { method: 'GET', headers: { 'Authorization': 'Bearer dummy' } }).catch(() => {})
+    console.log('🔥 Warming up backend...')
+    const controller = new AbortController()
+    const warmTimeout = setTimeout(() => controller.abort(), 90000) // 90s timeout for warmup
+    
+    await fetch(`${BASE_URL.replace('/api', '')}/health`, {
+      method: 'GET',
+      signal: controller.signal
+    })
+    clearTimeout(warmTimeout)
+    console.log('✓ Backend warmup successful')
   } catch (e) {
-    console.log('Backend warmup in progress...')
+    console.log('⚠ Backend warmup in progress (cold start)...')
   }
 }
 
@@ -21,7 +28,7 @@ async function request(path, options = {}) {
   if (token) headers['Authorization'] = `Bearer ${token}`
   
   const controller = new AbortController()
-  const timeout = setTimeout(() => controller.abort(), 60000) // 60 second timeout
+  const timeout = setTimeout(() => controller.abort(), 90000) // 90 second timeout for Render cold starts
   
   try {
     const res = await fetch(`${BASE_URL}${path}`, { ...options, headers, signal: controller.signal })
@@ -30,7 +37,7 @@ async function request(path, options = {}) {
     return data
   } catch (err) {
     if (err.name === 'AbortError') {
-      throw new Error('Request timed out. The server is loading. Please try again in a few seconds.')
+      throw new Error('❌ Request timed out. The server is starting up (Render cold start). Please wait 30-90 seconds and try again.')
     }
     throw err
   } finally {
