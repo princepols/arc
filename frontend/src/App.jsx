@@ -6,7 +6,7 @@ import { useState, useCallback, useRef, useEffect } from 'react'
 import { useAuth }    from './hooks/useAuth'
 import { useChat }    from './hooks/useChat'
 import { useProfile } from './hooks/useProfile'
-import { sessionsAPI } from './utils/api'
+import { sessionsAPI, warmupBackend } from './utils/api'
 
 import AuthPage       from './pages/AuthPage'
 import HomePage       from './pages/HomePage'
@@ -65,6 +65,7 @@ export default function App() {
   const { profile, updateProfile } = useProfile(user?.username || '')
 
   useEffect(() => {
+    warmupBackend() // Wake up Render backend on app load
     const handleResize = () => {
       if (window.innerWidth < 768) setSidebarOpen(false)
       else setSidebarOpen(true)

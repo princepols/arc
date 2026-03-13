@@ -27,6 +27,11 @@ app.add_middleware(
 def startup():
     init_db()
 
+# Health check endpoint (fast, no DB call)
+@app.get("/health")
+def health():
+    return {"status": "ok"}
+
 app.include_router(auth_router,     prefix="/api/auth")
 app.include_router(sessions_router, prefix="/api/sessions")
 app.include_router(chat_router,     prefix="/api/chat")

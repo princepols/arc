@@ -17,7 +17,7 @@ JWT_SECRET    = os.getenv("JWT_SECRET", "change_this_secret")
 JWT_ALGORITHM = "HS256"
 JWT_EXPIRE_HOURS = 72
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto", bcrypt__rounds=10)
 bearer_scheme = HTTPBearer()
 
 

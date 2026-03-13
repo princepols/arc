@@ -8,14 +8,31 @@ async function request(path, options = {}) {
   const token = localStorage.getItem('arc_token')
   const headers = { 'Content-Type': 'application/json', ...options.headers }
   if (token) headers['Authorization'] = `Bearer ${token}`
-  const res = await fetch(`${BASE_URL}${path}`, { ...options, headers })
-  const data = await res.json()
-  if (!res.ok) throw new Error(data.detail || 'Request failed')
-  return data
+  
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), 30000) // 30 second timeout
+  
+  try {
+    const res = await fetch(`${BASE_URL}${path}`, { ...options, headers, signal: controller.signal })
+    const data = await res.json()
+    if (!res.ok) throw new Error(data.detail || 'Request failed')
+    return data
+  } catch (err) {
+    if (err.name === 'AbortError') {
+      throw new Error('Request timed out. Please check your connection and try again.')
+    }
+    throw err
+  } finally {
+    clearTimeout(timeout)
+  }
+}
+
+// Warm up backend on app load (prevent Render cold start)
+export const warmupBackend = () => {
+  fetch(`${BASE_URL.replace('/api', '')}/health`, { method: 'GET' }).catch(() => {})
 }
 
 export const authAPI = {
-  sendOtp:  (body) => request('/auth/send-otp', { method: 'POST', body: JSON.stringify(body) }),
   register: (body) => request('/auth/register', { method: 'POST', body: JSON.stringify(body) }),
   login:    (body) => request('/auth/login',    { method: 'POST', body: JSON.stringify(body) }),
   me:       ()     => request('/auth/me'),
