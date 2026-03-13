@@ -2,7 +2,18 @@
  * Arc AI - API Client v2
  */
 
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api' /*const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api' */
+const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api'
+
+// Warm up backend on app load (prevent Render cold start)
+export const warmupBackend = async () => {
+  try {
+    await fetch(`${BASE_URL.replace('/api', '')}/health`, { method: 'GET' })
+    // Hit a real endpoint to fully wake up
+    await fetch(`${BASE_URL}/auth/me`, { method: 'GET', headers: { 'Authorization': 'Bearer dummy' } }).catch(() => {})
+  } catch (e) {
+    console.log('Backend warmup in progress...')
+  }
+}
 
 async function request(path, options = {}) {
   const token = localStorage.getItem('arc_token')
@@ -10,7 +21,7 @@ async function request(path, options = {}) {
   if (token) headers['Authorization'] = `Bearer ${token}`
   
   const controller = new AbortController()
-  const timeout = setTimeout(() => controller.abort(), 30000) // 30 second timeout
+  const timeout = setTimeout(() => controller.abort(), 60000) // 60 second timeout
   
   try {
     const res = await fetch(`${BASE_URL}${path}`, { ...options, headers, signal: controller.signal })
@@ -19,17 +30,12 @@ async function request(path, options = {}) {
     return data
   } catch (err) {
     if (err.name === 'AbortError') {
-      throw new Error('Request timed out. Please check your connection and try again.')
+      throw new Error('Request timed out. The server is loading. Please try again in a few seconds.')
     }
     throw err
   } finally {
     clearTimeout(timeout)
   }
-}
-
-// Warm up backend on app load (prevent Render cold start)
-export const warmupBackend = () => {
-  fetch(`${BASE_URL.replace('/api', '')}/health`, { method: 'GET' }).catch(() => {})
 }
 
 export const authAPI = {
