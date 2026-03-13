@@ -24,13 +24,19 @@ async function request(path, options = {}) {
   const timeout = setTimeout(() => controller.abort(), 60000) // 60 second timeout
 
   try {
-    const res = await fetch(`${BASE_URL}${path}`, { ...options, headers, signal: controller.signal })
+    const fullUrl = `${BASE_URL}${path}`
+    console.log(`📡 Requesting: ${fullUrl}`)
+    
+    const res = await fetch(fullUrl, { ...options, headers, signal: controller.signal })
     const data = await res.json()
     if (!res.ok) throw new Error(data.detail || 'Request failed')
     return data
   } catch (err) {
     if (err.name === 'AbortError') {
       throw new Error('Request timed out. The server is loading. Please try again in a few seconds.')
+    }
+    if (err instanceof TypeError && err.message.includes('fetch')) {
+      throw new Error('Failed to connect to server. Check your internet connection or the backend is unavailable.')
     }
     throw err
   } finally {
