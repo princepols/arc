@@ -1,25 +1,19 @@
 {
-  "root": "frontend",
-  "buildCommand": "npm run build",
-  "outputDirectory": "dist",
-  "headers": [
+  "buildCommand": "cd frontend && npm install && npm run build",
+  "outputDirectory": "frontend/dist",
+  "rewrites": [
     {
       "source": "/(.*)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=3600, s-maxage=3600"
-        }
-      ]
+      "destination": "/$1"
+    },
+    {
+      "source": "/.*",
+      "destination": "/index.html"
     }
   ],
-  "routes": [
-    {
-      "src": "/(?!.*\\.)(.*)",
-      "dest": "/index.html",
-      "status": 200
-    }
-  ]
+  "env": {
+    "VITE_API_URL": "@vite_api_url"
+  }
 }
 
 
