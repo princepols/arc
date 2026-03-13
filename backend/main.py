@@ -39,5 +39,6 @@ app.include_router(upload_router,   prefix="/api/upload")
 app.include_router(admin_router,    prefix="/api")
 
 @app.get("/")
+@app.head("/")
 def root():
     return {"status": "Arc AI v2.0 running"}
