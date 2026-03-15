@@ -9,10 +9,12 @@ import UsersSection          from './UsersSection'
 import AnalyticsSection      from './AnalyticsSection'
 import ConversationsSection  from './ConversationsSection'
 import SecuritySection       from './SecuritySection'
+import GuestsSection         from './GuestsSection'
 
 const NAV = [
   { id: 'overview',       label: 'Dashboard',       icon: '' },
   { id: 'users',          label: 'Users',            icon: '' },
+  { id: 'guests',         label: 'Guest Users',      icon: '👥' },
   { id: 'analytics',      label: 'Usage Analytics',  icon: '' },
   { id: 'conversations',  label: 'Conversations',    icon: '' },
   { id: 'security',       label: 'Security',         icon: '' },
@@ -21,6 +23,7 @@ const NAV = [
 const SECTION_TITLES = {
   overview:      'Dashboard Overview',
   users:         'Manage Users',
+  guests:        'Guest Users',
   analytics:     'Usage Analytics',
   conversations: 'Conversations',
   security:      'Security & Logs',
@@ -33,6 +36,7 @@ export default function AdminDashboard({ onLogout }) {
     switch (active) {
       case 'overview':      return <OverviewSection />
       case 'users':         return <UsersSection />
+      case 'guests':        return <GuestsSection />
       case 'analytics':     return <AnalyticsSection />
       case 'conversations': return <ConversationsSection />
       case 'security':      return <SecuritySection />
@@ -89,7 +93,6 @@ export default function AdminDashboard({ onLogout }) {
           ))}
         </nav>
 
-        {/* Spacer */}
         <div style={{ flex: 1 }} />
 
         {/* Admin info */}
@@ -111,7 +114,6 @@ export default function AdminDashboard({ onLogout }) {
 
       {/* ── Main content ── */}
       <main style={s.main}>
-        {/* Top bar */}
         <div style={s.topBar}>
           <div>
             <h1 style={s.pageTitle}>{SECTION_TITLES[active]}</h1>
@@ -125,7 +127,6 @@ export default function AdminDashboard({ onLogout }) {
           </div>
         </div>
 
-        {/* Section content */}
         <div style={s.content}>
           {renderSection()}
         </div>
@@ -136,8 +137,6 @@ export default function AdminDashboard({ onLogout }) {
 
 const s = {
   shell:       { display: 'flex', height: '100vh', width: '100vw', background: '#070709', fontFamily: "'JetBrains Mono', 'Courier New', monospace", color: '#e8e8f0', overflow: 'hidden' },
-
-  // Sidebar
   sidebar:     { width: 220, background: '#0a0a0d', borderRight: '1px solid #111', display: 'flex', flexDirection: 'column', padding: '0 0 16px', flexShrink: 0 },
   brand:       { display: 'flex', alignItems: 'center', gap: 10, padding: '22px 18px 16px', borderBottom: '1px solid #111' },
   brandIcon:   { fontSize: 24, color: '#ef4444', textShadow: '0 0 12px rgba(239,68,68,0.5)', flexShrink: 0 },
@@ -151,8 +150,6 @@ const s = {
   adminInfo:   { display: 'flex', alignItems: 'center', gap: 10, padding: '12px 16px', borderTop: '1px solid #111', marginBottom: 4 },
   adminAvatar: { width: 30, height: 30, borderRadius: '50%', background: 'linear-gradient(135deg, #ef4444, #b91c1c)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 800, flexShrink: 0 },
   logoutBtn:   { margin: '0 10px', padding: '9px 14px', background: 'transparent', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 4, color: '#ef4444', fontFamily: 'inherit', fontSize: 11, fontWeight: 700, cursor: 'pointer', letterSpacing: '0.06em', transition: 'background 0.15s' },
-
-  // Main
   main:        { flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' },
   topBar:      { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 28px', borderBottom: '1px solid #111', flexShrink: 0 },
   pageTitle:   { fontSize: 18, fontWeight: 800, color: '#f0f0f5', letterSpacing: '-0.03em', margin: 0 },
