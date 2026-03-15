@@ -10,13 +10,13 @@ import GuestLimitModal from '../components/GuestLimitModal'
 import arcLogo from '../assets/arclogo.png'
 
 const MODES = [
-  { key: 'general',        label: 'General' },
-  { key: 'search',         label: 'Search' },
-  { key: 'summarize',      label: 'Summarize' },
-  { key: 'paraphrase',     label: 'Paraphrase' },
-  { key: 'code',           label: 'Code' },
-  { key: 'prompt_enhance', label: 'Enhance' },
-  { key: 'humanize',       label: 'Humanize' },
+  { key: 'general',        label: '💬 General' },
+  { key: 'search',         label: '🔍 Search' },
+  { key: 'summarize',      label: '∑ Summarize' },
+  { key: 'paraphrase',     label: '↺ Paraphrase' },
+  { key: 'code',           label: '</> Code' },
+  { key: 'prompt_enhance', label: '✦ Enhance' },
+  { key: 'humanize',       label: '🧬 Humanize' },
 ]
 
 export default function GuestChat({ onSignUp, onLogin }) {
@@ -67,7 +67,7 @@ export default function GuestChat({ onSignUp, onLogin }) {
               <div style={{ ...s.counterFill, width: `${(promptCount / limit) * 100}%`, background: promptCount >= limit ? '#f87171' : promptCount >= 3 ? '#fbbf24' : '#4ade80' }} />
             </div>
             <span style={{ ...s.counterText, color: promptCount >= limit ? '#f87171' : 'var(--text-muted)' }}>
-              {/*{promptCount}/{limit} prompts */}
+              {promptCount}/{limit} prompts
             </span>
           </div>
           <button style={s.loginBtn} onClick={onLogin}>Sign In</button>
@@ -77,6 +77,7 @@ export default function GuestChat({ onSignUp, onLogin }) {
 
       {/* Messages */}
       <div style={s.messages}>
+        <div style={s.messagesInner}>
         {messages.length === 0 && (
           <div style={s.welcome}>
             <img src={arcLogo} alt="Arc" style={s.welcomeLogo} />
@@ -102,10 +103,12 @@ export default function GuestChat({ onSignUp, onLogin }) {
         )}
 
         <div ref={bottomRef} />
+        </div>
       </div>
 
       {/* Input */}
       <div style={s.inputArea}>
+        <div style={s.inputInner}>
         {/* Mode selector */}
         <div style={s.modes}>
           {MODES.map(m => (
@@ -144,10 +147,11 @@ export default function GuestChat({ onSignUp, onLogin }) {
         {/* Upgrade nudge */}
         {promptCount >= 3 && !limitReached && (
           <div style={s.nudge}>
-            {remaining} prompt{remaining !== 1 ? 's' : ''} left —{' '}
+            ⚡ {remaining} prompt{remaining !== 1 ? 's' : ''} left —{' '}
             <button style={s.nudgeLink} onClick={onSignUp}>Sign up free for unlimited access</button>
           </div>
         )}
+        </div>
       </div>
 
       {/* Limit modal */}
@@ -175,7 +179,8 @@ const s = {
   counterText:  { fontSize: 11, fontWeight: 600 },
   loginBtn:     { padding: '6px 14px', background: 'transparent', border: '1px solid var(--border-mid)', color: 'var(--text-secondary)', borderRadius: 8, fontSize: 13, cursor: 'pointer' },
   signupBtn:    { padding: '6px 14px', background: 'var(--accent)', border: 'none', color: '#000', borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: 'pointer' },
-  messages:     { flex: 1, overflowY: 'auto', padding: '16px 20px', display: 'flex', flexDirection: 'column' },
+  messages:     { flex: 1, overflowY: 'auto', padding: '16px 20px', display: 'flex', flexDirection: 'column', alignItems: 'center' },
+  messagesInner:{ width: '100%', maxWidth: 760, display: 'flex', flexDirection: 'column' },
   arcAvatar:    { width: 30, height: 30, borderRadius: 8, flexShrink: 0, overflow: 'hidden', marginTop: 2 },
   welcome:      { flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '40px 20px', gap: 12 },
   welcomeLogo:  { width: 56, height: 56, borderRadius: 14, objectFit: 'cover', marginBottom: 8 },
@@ -183,7 +188,8 @@ const s = {
   welcomeDesc:  { fontSize: 14, color: 'var(--text-secondary)', maxWidth: 380, lineHeight: 1.6, margin: 0 },
   suggestions:  { display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'center', marginTop: 8 },
   suggestion:   { padding: '8px 14px', background: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)', borderRadius: 20, fontSize: 13, color: 'var(--text-secondary)', cursor: 'pointer' },
-  inputArea:    { padding: '12px 16px 16px', borderTop: '1px solid var(--border-subtle)', background: 'var(--bg-surface)', flexShrink: 0 },
+  inputArea:    { padding: '12px 20px 16px', borderTop: '1px solid var(--border-subtle)', background: 'var(--bg-surface)', flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'center' },
+  inputInner:   { width: '100%', maxWidth: 760 },
   modes:        { display: 'flex', gap: 6, overflowX: 'auto', paddingBottom: 8, scrollbarWidth: 'none' },
   modeBtn:      { padding: '4px 10px', borderRadius: 20, border: '1px solid var(--border-subtle)', background: 'transparent', color: 'var(--text-muted)', fontSize: 12, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 },
   modeBtnActive:{ background: 'var(--accent)', color: '#000', borderColor: 'var(--accent)', fontWeight: 600 },
