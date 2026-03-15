@@ -11,6 +11,7 @@ from routes.chat     import router as chat_router
 from routes.sessions import router as sessions_router
 from routes.upload   import router as upload_router
 from routes.admin    import router as admin_router
+from routes.guest    import router as guest_router
 
 app = FastAPI(title="Arc AI", version="2.0.0")
 
@@ -37,6 +38,7 @@ app.include_router(sessions_router, prefix="/api/sessions")
 app.include_router(chat_router,     prefix="/api/chat")
 app.include_router(upload_router,   prefix="/api/upload")
 app.include_router(admin_router,    prefix="/api")
+app.include_router(guest_router,    prefix="/api")
 
 @app.get("/")
 @app.head("/")

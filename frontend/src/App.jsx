@@ -10,6 +10,7 @@ import { sessionsAPI, warmupBackend } from './utils/api'
 
 import AuthPage       from './pages/AuthPage'
 import HomePage       from './pages/HomePage'
+import GuestChat      from './pages/GuestChat'
 import AdminLogin     from './admin/AdminLogin'
 import AdminDashboard from './admin/AdminDashboard'
 import Sidebar        from './components/Sidebar'
@@ -58,6 +59,10 @@ export default function App() {
   const [refreshSessions, setRefreshSessions] = useState(0)
   const [profileOpen,     setProfileOpen]     = useState(false)
 
+  // Guest auth state
+  const [showAuth, setShowAuth] = useState(false)
+  const [authMode, setAuthMode] = useState('login') // 'login' | 'signup'
+
   const activeSessionRef = useRef(null)
   activeSessionRef.current = activeSessionId
 
@@ -65,7 +70,7 @@ export default function App() {
   const { profile, updateProfile } = useProfile(user?.username || '')
 
   useEffect(() => {
-    warmupBackend() // Wake up Render backend on app load
+    warmupBackend()
     const handleResize = () => {
       if (window.innerWidth < 768) setSidebarOpen(false)
       else setSidebarOpen(true)
@@ -125,7 +130,23 @@ export default function App() {
   if (adminView === 'dashboard') return <AdminDashboard onLogout={handleAdminLogout} />
   if (adminView === 'login')     return <AdminLogin onLogin={handleAdminLogin} />
   if (showHome) return <HomePage onEnter={() => setShowHome(false)} />
-  if (!user)    return <AuthPage onAuth={login} />
+
+  // Show AuthPage when guest clicks Sign In / Sign Up
+  if (!user && showAuth) return (
+    <AuthPage
+      onAuth={login}
+      initialMode={authMode}
+      onBack={() => setShowAuth(false)}
+    />
+  )
+
+  // Show GuestChat for unauthenticated users
+  if (!user) return (
+    <GuestChat
+      onSignUp={() => { setAuthMode('signup'); setShowAuth(true) }}
+      onLogin={()  => { setAuthMode('login');  setShowAuth(true) }}
+    />
+  )
 
   return (
     <>

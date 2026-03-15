@@ -103,35 +103,37 @@ def dashboard(_: dict = Depends(require_admin)):
     conn = get_connection()
     try:
         with conn.cursor() as cur:
-            # Total users
             cur.execute("SELECT COUNT(*) as cnt FROM users")
             total_users = cur.fetchone()["cnt"]
 
-            # Banned users
             cur.execute("SELECT COUNT(*) as cnt FROM users WHERE is_banned=1")
             banned_users = cur.fetchone()["cnt"]
 
-            # Total messages
             cur.execute("SELECT COUNT(*) as cnt FROM messages")
             total_messages = cur.fetchone()["cnt"]
 
-            # Messages today
             cur.execute("SELECT COUNT(*) as cnt FROM messages WHERE DATE(created_at)=CURDATE()")
             messages_today = cur.fetchone()["cnt"]
 
-            # Messages this week
             cur.execute("SELECT COUNT(*) as cnt FROM messages WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)")
             messages_week = cur.fetchone()["cnt"]
 
-            # Total sessions
             cur.execute("SELECT COUNT(*) as cnt FROM chat_sessions")
             total_sessions = cur.fetchone()["cnt"]
 
-            # New users today
             cur.execute("SELECT COUNT(*) as cnt FROM users WHERE DATE(created_at)=CURDATE()")
             new_users_today = cur.fetchone()["cnt"]
 
-            # Messages per day for last 7 days
+            # Guest stats
+            try:
+                cur.execute("SELECT COUNT(*) as cnt FROM guest_sessions")
+                total_guests = cur.fetchone()["cnt"]
+                cur.execute("SELECT COUNT(*) as cnt FROM guest_sessions WHERE converted=1")
+                converted_guests = cur.fetchone()["cnt"]
+            except Exception:
+                total_guests = 0
+                converted_guests = 0
+
             cur.execute("""
                 SELECT DATE(created_at) as day, COUNT(*) as cnt
                 FROM messages
@@ -142,7 +144,6 @@ def dashboard(_: dict = Depends(require_admin)):
             """)
             daily_messages = [{"day": str(r["day"]), "count": r["cnt"]} for r in cur.fetchall()]
 
-            # Top active users
             cur.execute("""
                 SELECT u.username, u.email, COUNT(m.id) as msg_count
                 FROM users u
@@ -153,7 +154,6 @@ def dashboard(_: dict = Depends(require_admin)):
             """)
             top_users = cur.fetchall()
 
-            # Recent suspicious activity
             cur.execute("""
                 SELECT * FROM activity_logs
                 WHERE event_type='suspicious'
@@ -165,13 +165,15 @@ def dashboard(_: dict = Depends(require_admin)):
 
         return {
             "stats": {
-                "total_users":    total_users,
-                "banned_users":   banned_users,
-                "total_messages": total_messages,
-                "messages_today": messages_today,
-                "messages_week":  messages_week,
-                "total_sessions": total_sessions,
-                "new_users_today":new_users_today,
+                "total_users":      total_users,
+                "banned_users":     banned_users,
+                "total_messages":   total_messages,
+                "messages_today":   messages_today,
+                "messages_week":    messages_week,
+                "total_sessions":   total_sessions,
+                "new_users_today":  new_users_today,
+                "total_guests":     total_guests,
+                "converted_guests": converted_guests,
             },
             "daily_messages": daily_messages,
             "top_users":      top_users,
@@ -346,7 +348,6 @@ def analytics(_: dict = Depends(require_admin)):
     conn = get_connection()
     try:
         with conn.cursor() as cur:
-            # Messages per day — last 30 days
             cur.execute("""
                 SELECT DATE(created_at) as day, COUNT(*) as total,
                        SUM(role='user') as user_msgs,
@@ -360,14 +361,12 @@ def analytics(_: dict = Depends(require_admin)):
                       "user": r["user_msgs"], "ai": r["ai_msgs"], "errors": r["errors"]}
                      for r in cur.fetchall()]
 
-            # Mode breakdown
             cur.execute("""
                 SELECT mode, COUNT(*) as cnt FROM messages
                 WHERE role='user' GROUP BY mode ORDER BY cnt DESC
             """)
             modes = cur.fetchall()
 
-            # Hourly pattern (last 7 days)
             cur.execute("""
                 SELECT HOUR(created_at) as hour, COUNT(*) as cnt
                 FROM messages WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
@@ -376,7 +375,6 @@ def analytics(_: dict = Depends(require_admin)):
             """)
             hourly = cur.fetchall()
 
-            # High-usage users (>100 msgs)
             cur.execute("""
                 SELECT u.username, u.email, COUNT(m.id) as cnt
                 FROM users u JOIN messages m ON m.user_id=u.id AND m.role='user'
@@ -386,6 +384,52 @@ def analytics(_: dict = Depends(require_admin)):
             heavy_users = cur.fetchall()
 
         return {"daily": daily, "modes": modes, "hourly": hourly, "heavy_users": heavy_users}
+    finally:
+        conn.close()
+
+
+# ── Guest Analytics ────────────────────────────────────────────────────────────
+
+@router.get("/guests")
+def list_guests(page: int = 1, _: dict = Depends(require_admin)):
+    conn = get_connection()
+    try:
+        offset = (page - 1) * 50
+        with conn.cursor() as cur:
+            cur.execute("SELECT COUNT(*) as cnt FROM guest_sessions")
+            total = cur.fetchone()["cnt"]
+
+            cur.execute("""
+                SELECT guest_id, prompt_count, converted, converted_user_id,
+                       ip_address, first_seen, last_seen,
+                       CASE WHEN converted=1 THEN 'Converted' ELSE 'Guest' END as status
+                FROM guest_sessions
+                ORDER BY last_seen DESC
+                LIMIT 50 OFFSET %s
+            """, (offset,))
+            guests = cur.fetchall()
+
+            cur.execute("SELECT COUNT(*) as cnt FROM guest_sessions WHERE converted=1")
+            converted = cur.fetchone()["cnt"]
+
+            cur.execute("SELECT SUM(prompt_count) as total FROM guest_sessions")
+            total_prompts = cur.fetchone()["total"] or 0
+
+        for g in guests:
+            g["first_seen"] = str(g["first_seen"])
+            g["last_seen"]  = str(g["last_seen"])
+
+        return {
+            "guests": guests,
+            "stats": {
+                "total_guests":    total,
+                "converted":       converted,
+                "conversion_rate": round((converted / total * 100), 1) if total > 0 else 0,
+                "total_prompts":   int(total_prompts),
+            },
+            "total": total,
+            "page":  page,
+        }
     finally:
         conn.close()
 
