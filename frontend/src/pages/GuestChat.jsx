@@ -10,13 +10,13 @@ import GuestLimitModal from '../components/GuestLimitModal'
 import arcLogo from '../assets/arclogo.png'
 
 const MODES = [
-  { key: 'general',        label: '💬 General' },
-  { key: 'search',         label: '🔍 Search' },
-  { key: 'summarize',      label: '∑ Summarize' },
-  { key: 'paraphrase',     label: '↺ Paraphrase' },
-  { key: 'code',           label: '</> Code' },
-  { key: 'prompt_enhance', label: '✦ Enhance' },
-  { key: 'humanize',       label: '🧬 Humanize' },
+  { key: 'general',        label: 'General' },
+  { key: 'search',         label: 'Search' },
+  { key: 'summarize',      label: 'Summarize' },
+  { key: 'paraphrase',     label: 'Paraphrase' },
+  { key: 'code',           label: 'Code' },
+  { key: 'prompt_enhance', label: 'Enhance' },
+  { key: 'humanize',       label: 'Humanize' },
 ]
 
 export default function GuestChat({ onSignUp, onLogin }) {
@@ -67,7 +67,7 @@ export default function GuestChat({ onSignUp, onLogin }) {
               <div style={{ ...s.counterFill, width: `${(promptCount / limit) * 100}%`, background: promptCount >= limit ? '#f87171' : promptCount >= 3 ? '#fbbf24' : '#4ade80' }} />
             </div>
             <span style={{ ...s.counterText, color: promptCount >= limit ? '#f87171' : 'var(--text-muted)' }}>
-              {promptCount}/{limit} prompts
+              {/* {promptCount}/{limit} prompts */}
             </span>
           </div>
           <button style={s.loginBtn} onClick={onLogin}>Sign In</button>
@@ -129,7 +129,7 @@ export default function GuestChat({ onSignUp, onLogin }) {
             value={input}
             onChange={e => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder={limitReached ? 'Create an account to continue...' : `Message Arc… (${remaining} prompt${remaining !== 1 ? 's' : ''} remaining)`}
+            placeholder={limitReached ? 'Create an account to continue...' : `Message Arc… `}
             disabled={limitReached || loading}
             rows={1}
           />
@@ -147,7 +147,7 @@ export default function GuestChat({ onSignUp, onLogin }) {
         {/* Upgrade nudge */}
         {promptCount >= 3 && !limitReached && (
           <div style={s.nudge}>
-            ⚡ {remaining} prompt{remaining !== 1 ? 's' : ''} left —{' '}
+            {remaining} prompt{remaining !== 1 ? 's' : ''} left —{' '}
             <button style={s.nudgeLink} onClick={onSignUp}>Sign up free for unlimited access</button>
           </div>
         )}
