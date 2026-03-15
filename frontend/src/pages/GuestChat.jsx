@@ -144,7 +144,7 @@ export default function GuestChat({ onSignUp, onLogin }) {
         {/* Upgrade nudge */}
         {promptCount >= 3 && !limitReached && (
           <div style={s.nudge}>
-            ⚡ {remaining} prompt{remaining !== 1 ? 's' : ''} left —{' '}
+            {remaining} prompt{remaining !== 1 ? 's' : ''} left —{' '}
             <button style={s.nudgeLink} onClick={onSignUp}>Sign up free for unlimited access</button>
           </div>
         )}
