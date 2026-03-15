@@ -10,13 +10,13 @@ import GuestLimitModal from '../components/GuestLimitModal'
 import arcLogo from '../assets/arclogo.png'
 
 const MODES = [
-  { key: 'general',        label: '💬 General' },
-  { key: 'search',         label: '🔍 Search' },
-  { key: 'summarize',      label: '∑ Summarize' },
-  { key: 'paraphrase',     label: '↺ Paraphrase' },
-  { key: 'code',           label: '</> Code' },
-  { key: 'prompt_enhance', label: '✦ Enhance' },
-  { key: 'humanize',       label: '🧬 Humanize' },
+  { key: 'general',        label: 'General' },
+  { key: 'search',         label: 'Search' },
+  { key: 'summarize',      label: 'Summarize' },
+  { key: 'paraphrase',     label: 'Paraphrase' },
+  { key: 'code',           label: 'Code' },
+  { key: 'prompt_enhance', label: 'Enhance' },
+  { key: 'humanize',       label: 'Humanize' },
 ]
 
 export default function GuestChat({ onSignUp, onLogin }) {
@@ -67,7 +67,7 @@ export default function GuestChat({ onSignUp, onLogin }) {
               <div style={{ ...s.counterFill, width: `${(promptCount / limit) * 100}%`, background: promptCount >= limit ? '#f87171' : promptCount >= 3 ? '#fbbf24' : '#4ade80' }} />
             </div>
             <span style={{ ...s.counterText, color: promptCount >= limit ? '#f87171' : 'var(--text-muted)' }}>
-              {promptCount}/{limit} prompts
+              {/*{promptCount}/{limit} prompts */}
             </span>
           </div>
           <button style={s.loginBtn} onClick={onLogin}>Sign In</button>
